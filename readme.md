@@ -18,6 +18,15 @@ The application is built with a Python backend (Flask, Flask-SocketIO) and a pur
 * **Data Export**: Download processed tick data as CSV or JSON. 
 * **Test Data Generation**: Includes built-in tools to generate historical and live *test* data for development and demonstration.
 
+## 🎥 App Demo
+
+
+
+## 🏛️ Architecture
+
+<img width="1119" height="688" alt="architecture" src="https://github.com/user-attachments/assets/d61931c2-364e-4b71-a17d-0769dca6dcde" />
+
+
 ## 🏛️ Architecture
 
 The application runs as a single, monolithic Python process using Flask.
