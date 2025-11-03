@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantitative Analytics Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    
+    <script src="{{ url_for('static', filename='lib/socket.io.js') }}"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="section-title">Data Collection</div>
+                <div class="control-group">
+                    <div class="control-label">Add Trading Pair</div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="newSymbol" class="form-control" placeholder="btcusdt" value="btcusdt">
+                        <button id="addSymbolBtn" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Active Symbols</div>
+                    <div id="symbolList" class="symbol-list"></div>
+                </div>
+                <div class="control-group" style="display: flex; gap: 8px;">
+                    <button id="startCollection" class="btn btn-success">Start Real Data</button>
+                    <button id="stopCollection" class="btn btn-danger">Stop Real Data</button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Analytics Configuration</div>
+                <div class="control-group">
+                    <div class="control-label">Symbol 1</div>
+                    <select id="symbol1" class="form-control">
+                        <option value="btcusdt">BTCUSDT</option>
+                        <option value="ethusdt">ETHUSDT</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Symbol 2</div>
+                    <select id="symbol2" class="form-control">
+                        <option value="ethusdt">ETHUSDT</option>
+                        <option value="btcusdt">BTCUSDT</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Timeframe</div>
+                    <select id="timeframe" class="form-control">
+                        <option value="1min">1 Minute</option>
+                        <option value="5min">5 Minutes</option>
+                        <option value="15min">15 Minutes</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Rolling Window</div>
+                    <select id="windowSize" class="form-control">
+                        <option value="10">10</option>
+                        <option value="20" selected>20</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+                <button id="calculateAnalytics" class="btn btn-primary" style="width: 100%;">Calculate Analytics</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Alert System</div>
+                <div class="control-group">
+                    <div class="control-label">Alert Name</div>
+                    <input type="text" id="alertName" class="form-control" placeholder="Price Alert">
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Condition</div>
+                    <select id="alertCondition" class="form-control">
+                        <option value="above">Price Above</option>
+                        <option value="below">Price Below</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Symbol</div>
+                    <select id="alertSymbol" class="form-control">
+                        <option value="btcusdt">BTCUSDT</option>
+                        <option value="ethusdt">ETHUSDT</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Threshold Price</div>
+                    <input type="number" id="alertThreshold" class="form-control" placeholder="50000">
+                </div>
+                <button id="addAlertBtn" class="btn btn-warning" style="width: 100%;">Add Alert</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Data Export</div>
+                <div class="control-group">
+                    <div class="control-label">Symbol</div>
+                    <select id="exportSymbol" class="form-control">
+                        <option value="btcusdt">BTCUSDT</option>
+                        <option value="ethusdt">ETHUSDT</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="control-label">Format</div>
+                    <select id="exportFormat" class="form-control">
+                        <option value="csv">CSV</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+                <button id="exportData" class="btn btn-secondary" style="width: 100%;">Export Data</button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">Development Tools</div>
+                <div class="control-group">
+                    <button id="generateTestData" class="btn btn-secondary" style="width: 100%; margin-bottom: 8px;">
+                        Generate Test Data
+                    </button>
+                    <button id="startTestData" class="btn btn-success" style="width: 100%; margin-bottom: 8px;">
+                        Start Live Test Data
+                    </button>
+                    <button id="stopTestData" class="btn btn-danger" style="width: 100%;">
+                        Stop Test Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="header">
+                <h1>Quantitative Analytics Dashboard</h1>
+                <div class="status-badge" id="connectionStatus">CONNECTED</div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="overview">Overview</button>
+                <button class="tab" data-tab="analytics">Analytics</button>
+                <button class="tab" data-tab="charts">Charts</button>
+                <button class="tab" data-tab="alerts">Alerts</button>
+            </div>
+
+            <div id="overviewTab" class="tab-content active">
+                <div class="stats-grid" id="realTimeStats">
+                    <div class="stat-card">
+                        <div class="stat-value">$0.00</div>
+                        <div class="stat-label">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">Key Analytics Summary</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #0ea5e9;">Regression Analysis</h4>
+                            <table style="width: 100%; font-size: 14px;">
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">Hedge Ratio:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="hedgeRatio">-</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">R²:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="rSquared">-</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">Current Spread:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="currentSpread">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div>
+                            <h4 style="margin-bottom: 15px; color: #0ea5e9;">Statistical Tests</h4>
+                            <table style="width: 100%; font-size: 14px;">
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">Z-Score:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="currentZScore">-</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">Correlation:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="currentCorrelation">-</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; color: #94a3b8;">ADF Stationary:</td>
+                                    <td style="padding: 8px 0; font-weight: 600;" id="adfStationary">-</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-title">ADF Test Details</div>
+                    <table style="width: 100%; font-size: 14px;">
+                        <tr>
+                            <td style="padding: 8px 0; color: #94a3b8;">Test Statistic:</td>
+                            <td style="padding: 8px 0; font-weight: 600;" id="adfStatistic">-</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; color: #94a3b8;">P-Value:</td>
+                            <td style="padding: 8px 0; font-weight: 600;" id="adfPValue">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="analyticsTab" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-title">Detailed Analytics Results</div>
+                    <div style="padding: 20px; text-align: center; color: #94a3b8;">
+                        <p>Click "Calculate Analytics" to see detailed analytics results.</p>
+                        <p>The system will show regression analysis, statistical tests, and correlation metrics.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chartsTab" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-title">Real-time Price Charts</div>
+                    <div style="height: 400px; width: 100%;">
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Analytics Overview</div>
+                    <div style="height: 400px; width: 100%;">
+                        <canvas id="analyticsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div id="alertsTab" class="tab-content">
+                <div class="chart-container">
+                    <div class="chart-title">Active Alerts</div>
+                    <div id="alertsList">
+                        <p style="color: #94a3b8; text-align: center; padding: 20px;">
+                            No alerts configured yet. Use the sidebar to add price alerts.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

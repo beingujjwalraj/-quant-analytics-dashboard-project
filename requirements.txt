@@ -1,0 +1,9 @@
+flask
+flask-socketio
+pandas
+numpy
+statsmodels
+scipy
+websocket-client
+python-dateutil
+plotly
