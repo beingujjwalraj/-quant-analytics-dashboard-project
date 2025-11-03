@@ -22,6 +22,12 @@ The application is built with a Python backend (Flask, Flask-SocketIO) and a pur
 
 
 
+https://github.com/user-attachments/assets/220df763-94e3-4226-9542-e63d95c0195a
+
+
+
+
+
 ## 🏛️ Architecture
 
 <img width="1119" height="688" alt="architecture" src="https://github.com/user-attachments/assets/d61931c2-364e-4b71-a17d-0769dca6dcde" />
@@ -93,10 +99,27 @@ Analytics are calculated via the `/api/calculate-analytics` endpoint in `app.py`
 
 ## 🤖 AI Usage Transparency
 
-(Per assignment requirements , please fill this section in with your own experience.)
+I used **Gemini** to assist with this project in several key areas, allowing me to focus on the core quantitative logic and system design.
 
-> **Example:** I used Gemini to...
-> * Help structure the Flask application and SocketIO integration.
-> * Generate boilerplate code for the `README.md` file.
-> * Debug issues with Chart.js time-series axis formatting.
-> * Suggest the `numpy`-based manual OLS calculation.
+### 🏗️ Architecture & Design
+- Brainstormed the initial application structure, specifically how to decouple the data ingestion from the web server (recommending a background thread for the `BinanceDataIngestion` class).  
+- Generated the PlantUML and HTML/SVG code for the architecture diagram, which was then manually refined.
+
+### ⚙️ Backend Development (Flask & Data)
+- Generated the boilerplate code for the Flask server (`app.py`), including setting up **Flask-SocketIO** for real-time communication.  
+- Wrote the **Database** class (`models.py`) with the correct SQLite `CREATE TABLE` and indexing syntax.  
+- Implemented the **BinanceDataIngestion** class, including the websocket-client connection and thread management logic.
+
+### 📊 Quantitative Analytics (Pandas & NumPy)
+- Provided the correct **pandas** syntax for time-series resampling (e.g., `df.resample('1min').ohlc()`).  
+- Generated the **NumPy-based OLS regression** function to calculate the hedge ratio without importing `statsmodels`.  
+- Wrote the **pandas** function for calculating a rolling **Z-Score**.
+
+### 💻 Frontend Development (JavaScript & Chart.js)
+- Generated the initial `app.js` class structure to manage state, socket listeners, and chart objects.  
+- Provided the correct **Chart.js** configuration for a time-series axis, including integration with `chartjs-adapter-date-fns`.  
+- Debugged an issue where charts would not resize correctly when switching tabs.  
+- Wrote the `fetch` API calls and logic to update the DOM with analytics results.
+
+## ------------------------------ ##
+
